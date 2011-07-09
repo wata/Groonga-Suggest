@@ -15,11 +15,11 @@ my $app = sub {
         my $u  = URI->new('http://localhost:10041/d/select');
         $u->query_form(
             table          => 'KEN_ALL',
-#            match_columns  => '_key,address,yomi',
-            query          => 'address:@' . $q,
-#            output_columns => '_key,address',
+            match_columns  => '_key,address,yomi',
+            query          => $q,
+            output_columns => '_key,address',
             sortby         => '_id',
-            limit          => '-1',
+            limit          => '100',
         );
         my ( undef, $code, undef, undef, $body ) = $ua->get($u);
         return [ 200, [ 'Content-Type' => 'application/json' ], [ $body ] ] if $code eq 200;
@@ -38,7 +38,7 @@ __DATA__
   $(document).ready(function() {
     $('input#search').keydown(function() {
       $.get('/search', {"q":$(this).val()}, function(json) {
-        var data = json.join(',');
+        var data = json[1][0].slice(2).join('<br />');
         $('div#address').html(data);
       });
     });

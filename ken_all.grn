@@ -1,5 +1,6 @@
 table_create --name KEN_ALL --flags TABLE_HASH_KEY --key_type UInt32
-table_create --name IndexAddress --flags TABLE_PAT_KEY|KEY_NORMALIZE --key_type ShortText --default_tokenizer TokenBigram
+table_create --name IndexKEN_ALL --flags TABLE_PAT_KEY|KEY_NORMALIZE --key_type ShortText --default_tokenizer TokenBigram
 
 column_create --table KEN_ALL --name address --flags COLUMN_SCALAR --type ShortText
-column_create --table IndexAddress --name index_address --flags COLUMN_INDEX|WITH_POSITION --type KEN_ALL --source address
+column_create --table KEN_ALL --name yomi --flags COLUMN_SCALAR --type ShortText
+column_create --table IndexKEN_ALL --name index_ken_all --flags COLUMN_INDEX|WITH_POSITION|WITH_SECTION --type KEN_ALL --source _key,address,yomi

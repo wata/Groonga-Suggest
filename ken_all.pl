@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use utf8;
+use Lingua::JA::Moji qw/hw2katakana kata2hira/;
 use JSON;
 use IPC::Cmd qw/run/;
 
@@ -9,12 +10,28 @@ open my $ken_all_csv, '<:encoding(shiftjis)', 'KEN_ALL.CSV'
 
 #my $data;
 while ( my $record = <$ken_all_csv> ) {
-    my ($zip_code, @address) = ( split /,/, $record )[2, 6, 7, 8];
+    my ($zip_code, @tmp) = ( split /,/, $record )[2 .. 8];
 
-    foreach my $value ($zip_code, @address) {
+    foreach my $value ($zip_code, @tmp) {
         $value =~ s/\A "(.*)" \z/$1/xms;
     }
 
+    # fix yomi
+    my @yomi = @tmp[0 .. 2];
+    if ( $yomi[2] eq 'ｲｶﾆｹｲｻｲｶﾞﾅｲﾊﾞｱｲ'
+         or $yomi[2] =~ / ﾉﾂｷﾞﾆﾊﾞﾝﾁｶﾞｸﾙﾊﾞｱｲ \z/xms
+       ) {
+        $yomi[2] = q{};
+    }
+    else {
+        $yomi[2] =~ s/ ｲﾁｴﾝ \z//xms;
+    }
+    my $yomi = join q{}, @yomi;
+    $yomi = hw2katakana($yomi);
+    $yomi = kata2hira($yomi);
+
+    # fix address
+    my @address = @tmp[3 .. 5];
     if ( $address[2] eq '以下に掲載がない場合'
          or $address[2] =~ / の次に番地がくる場合 \z/xms
        ) {
@@ -25,18 +42,14 @@ while ( my $record = <$ken_all_csv> ) {
     }
     my $address = join q{}, @address;
 
-    my $data = { _key => $zip_code, address => $address };
+    my $data = { _key => $zip_code, yomi => $yomi, address => $address };
     my ($ok, $err) = load->($data);
-    unless ($ok) {
-        die $err;
-    }
+    die $err unless $ok;
 #    push @{ $data }, { _key => $zip_code, address => $address };
 }
 
 #my ($ok, $err) = load->($data);
-#unless ($ok) {
-#    die $err;
-#}
+#warn $ok ? "complete" : $err;
 
 sub load {
     my $data = shift;
