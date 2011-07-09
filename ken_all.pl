@@ -1,5 +1,4 @@
 use strict;
-use warnings;
 use utf8;
 use Lingua::JA::Moji qw/hw2katakana kata2hira/;
 use JSON;
@@ -16,7 +15,6 @@ while ( my $record = <$ken_all_csv> ) {
         $value =~ s/\A "(.*)" \z/$1/xms;
     }
 
-    # fix yomi
     my @yomi = @tmp[0 .. 2];
     if ( $yomi[2] eq 'ｲｶﾆｹｲｻｲｶﾞﾅｲﾊﾞｱｲ'
          or $yomi[2] =~ / ﾉﾂｷﾞﾆﾊﾞﾝﾁｶﾞｸﾙﾊﾞｱｲ \z/xms
@@ -30,7 +28,6 @@ while ( my $record = <$ken_all_csv> ) {
     $yomi = hw2katakana($yomi);
     $yomi = kata2hira($yomi);
 
-    # fix address
     my @address = @tmp[3 .. 5];
     if ( $address[2] eq '以下に掲載がない場合'
          or $address[2] =~ / の次に番地がくる場合 \z/xms
