@@ -1,5 +1,4 @@
 use strict;
-use warnings;
 use Plack::Request;
 use URI;
 use Furl::HTTP;
