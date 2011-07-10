@@ -2,12 +2,13 @@ use strict;
 use utf8;
 use Lingua::JA::Moji qw/hw2katakana kata2hira/;
 use JSON;
-use IPC::Cmd qw/run/;
 
 open my $ken_all_csv, '<:encoding(shiftjis)', 'KEN_ALL.CSV'
     or die 'failed to open KEN_ALL.csv';
 
-#my $data;
+print "load --table KEN_ALL\n";
+print "[";
+my $i = 0;
 while ( my $record = <$ken_all_csv> ) {
     my ($zip_code, @tmp) = ( split /,/, $record )[2 .. 8];
 
@@ -40,29 +41,11 @@ while ( my $record = <$ken_all_csv> ) {
     my $address = join q{}, @address;
 
     my $data = { _key => $zip_code, yomi => $yomi, address => $address };
-    my ($ok, $err) = load->($data);
-    die $err unless $ok;
-#    push @{ $data }, { _key => $zip_code, address => $address };
+    if ($i > 0) {
+	print ",";
+    }
+    print "\n";
+    print encode_json($data);
+    $i++;
 }
-
-#my ($ok, $err) = load->($data);
-#warn $ok ? "complete" : $err;
-
-sub load {
-    my $data = shift;
-
-    $data = encode_json($data);
-
-    return run(
-        command => [
-            'groonga',
-            '/home/wata/db/groonga/Groonga-Suggest/groonga_suggest.db',
-            'load',
-            '--values',
-            "\'$data\'",
-            '--table',
-            'KEN_ALL',
-        ],
-        buffer  => \my $buf,
-    );
-}
+print "\n]\n"
